@@ -113,11 +113,26 @@ check_width_height() {
 	fi
 }
 
+check_javascript() {
+	local file="$1"
+	local match
+	# matches both "text/javascript" and <script> tags
+	while read -r match
+	do
+		error "found script: ${match::64}"
+	done < <(grep -Hn script "$file")
+	while read -r match
+	do
+		error "found function: ${match::64}"
+	done < <(grep -Hn function "$file")
+}
+
 while IFS= read -r file
 do
 	check_absolute_path "$file"
 	check_meta_filename_match "$file"
 	check_width_height "$file"
+	check_javascript "$file"
 done < <(find . -type f -name "*.svg")
 
 if [ "$num_errors" -ne "0" ]
